@@ -16,6 +16,7 @@ class Server
     else
       victim = "<@#{request.params.fetch('user_id')}>"
       attacker = request.params.fetch('text')
+      attacker = "someone" if attacker.strip.empty?
 
       acknowledgement = config.acknowledgement % { victim: victim, attacker: attacker }
 
