@@ -1,16 +1,7 @@
+require 'score'
 require 'leaderboard_markdown'
 
 class Leaderboard
-  Score = Struct.new(:id, :count) do
-    def slack_user_id
-      id ? "<@#{id}>" : "(Anonymous)"
-    end
-
-    def <=> (other)
-      other.count <=> count
-    end
-  end
-
   attr_reader :database
 
   def initialize(database)
