@@ -1,6 +1,7 @@
 require 'rack'
 require 'json'
 require 'slack_user_id'
+require 'leaderboard'
 
 class Server
   attr_reader :config
@@ -18,28 +19,7 @@ class Server
       message = request.params.fetch('text')
 
       if message.strip.split(/\s/).first == 'leaderboard'
-        lines = []
-
-        lines << "*Most hacks*"
-
-        config.database[:hacks].group_and_count(:attacker_id).sort { |a, b| b[:count] <=> a[:count] }.each do |data|
-          name = data[:attacker_id] ? "<@#{data[:attacker_id]}>" : "(Anonymous)"
-          count = data[:count]
-          lines << "#{name}: #{count}"
-        end
-
-        lines << "\n*Most hacked*"
-
-        config.database[:hacks].group_and_count(:victim_id).sort { |a, b| b[:count] <=> a[:count] }.each do |data|
-          name = "<@#{data[:victim_id]}>"
-          count = data[:count]
-          lines << "#{name}: #{count}"
-        end
-
-        data = {
-          response_type: "in_channel",
-          text: lines.join("\n")
-        }
+        body = Leaderboard.new(config.database).to_markdown
       else
         victim_id = request.params.fetch('user_id')
         victim = "<@#{victim_id}>"
@@ -50,15 +30,15 @@ class Server
 
         attacker = attacker_id ? "<@#{attacker_id}>" : "someone"
 
-        acknowledgement = config.acknowledgement % { victim: victim, attacker: attacker }
-
-        data = {
-          response_type: "in_channel",
-          text: acknowledgement
-        }
+        body = config.acknowledgement % { victim: victim, attacker: attacker }
       end
 
-      [200, { 'Content-Type' => 'application/json' }, [JSON.generate(data)]]
+      json = JSON.generate(
+        response_type: "in_channel",
+        text: body
+      )
+
+      [200, { 'Content-Type' => 'application/json' }, [json]]
     end
   end
 end

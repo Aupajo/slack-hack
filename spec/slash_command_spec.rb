@@ -69,7 +69,7 @@ RSpec.describe 'Slash command' do
     expect(last_response.status).to eq 200
     expect(last_response.content_type).to eq 'application/json'
 
-    expected_body = <<~LEADERBOARD.strip
+    expected_body = <<~LEADERBOARD
       *Most hacks*
       <@C>: 2
       (Anonymous): 1
