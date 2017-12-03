@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# Exit if any command fails
+set -e
+
+DOTENV=".env"
+
+function check_command {
+  command -v $1 >/dev/null || (echo "\`$1\` not found" && false)
+}
+
+function create_database {
+  if psql $1 -c '' 2>/dev/null; then
+    echo "$1 database detected."
+  else
+    createdb $1
+    echo "$1 database created."
+    DATABASE_URL=postgres://localhost/$1 bin/migrate
+  fi
+}
+
+check_command ruby || (echo "Please install Ruby" && exit 1)
+check_command createdb || (echo "Please install Postgres" && exit 1)
+
+[ -f $DOTENV ] && eval $(cat $DOTENV) && echo "==> Loaded $DOTENV"
+RACK_ENV=${RACK_ENV:-development}
+
+echo "==> Installing dependencies"
+check_command bundler || gem install bundler
+bundle check || bundle install
+
+if [ $RACK_ENV = "development" ]; then
+  echo "==> Creating databases"
+  create_database slack_hack_development
+  create_database slack_hack_test
+fi
+
+cat <<INSTRUCTIONS
+
+==> You're good to go!
+
+    Run \`bin/start\` to start a local server on http://localhost:9292/
+
+INSTRUCTIONS

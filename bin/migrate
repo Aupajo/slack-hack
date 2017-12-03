@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+require_relative '../config/environment'
+
+Sequel.extension :migration
+
+config = Config.new
+database = Sequel.connect(config.database_url)
+dir = Pathname(__dir__).join('..', 'db', 'migrations')
+
+Sequel::Migrator.apply(database, dir)
+
+current_version = database[:schema_info].first[:version]
+
+puts "Database at version #{current_version}."
