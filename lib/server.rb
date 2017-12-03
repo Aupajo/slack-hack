@@ -37,7 +37,7 @@ class Server
         end
 
         data = {
-          response_type: "ephemeral",
+          response_type: "in_channel",
           text: lines.join("\n")
         }
       else
