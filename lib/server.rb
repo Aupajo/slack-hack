@@ -2,6 +2,7 @@ require 'rack'
 require 'json'
 require 'slack_user_id'
 require 'leaderboard'
+require 'hack'
 
 class Server
   attr_reader :config
@@ -14,7 +15,7 @@ class Server
     request = Rack::Request.new(env)
 
     if request.params.fetch('token') != config.verification_token
-      [401, {}, ['Not authorized']]
+      [401, {}, ['Not authorized, invalid verification token']]
     else
       message = request.params.fetch('text')
 
@@ -22,15 +23,12 @@ class Server
         body = Leaderboard.new(config.database).to_markdown
       else
         victim_id = request.params.fetch('user_id')
-        victim = "<@#{victim_id}>"
-
         attacker_id = SlackUserID.parse(message)
 
-        config.database[:hacks].insert(victim_id: victim_id, attacker_id: attacker_id)
+        hack = Hack.new(attacker_id: attacker_id, victim_id: victim_id)
+        hack.persist!(config.database)
 
-        attacker = attacker_id ? "<@#{attacker_id}>" : "someone"
-
-        body = config.acknowledgement % { victim: victim, attacker: attacker }
+        body = hack.acknowledgement_message(config.acknowledgement)
       end
 
       json = JSON.generate(
