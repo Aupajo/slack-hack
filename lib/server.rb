@@ -16,28 +16,34 @@ class Server
   def call(env)
     @request = Rack::Request.new(env)
 
-    if token_invalid?
-      NOT_AUTHORIZED_RESPONSE
-    else
-      if leaderboard_requested?
-        body = Leaderboard.new(config.database).to_markdown
-      else
-        record_hack!
-        body = hack.acknowledgement_message(config.acknowledgement)
-      end
+    return NOT_AUTHORIZED_RESPONSE if token_invalid?
 
-      json_response(response_type: "in_channel", text: body)
+    if leaderboard_requested?
+      message = leaderboard_message
+    else
+      message = record_and_acknowledge_hack!
     end
+
+    in_channel_response(message)
   end
 
   private
 
-  def record_hack!
+  def leaderboard_message
+    Leaderboard.new(config.database).to_markdown
+  end
+
+  def record_and_acknowledge_hack!
     victim_id = request.params.fetch('user_id')
     attacker_id = SlackUserID.parse(slash_message_content)
 
-    @hack = Hack.new(attacker_id: attacker_id, victim_id: victim_id)
+    hack = Hack.new(attacker_id: attacker_id, victim_id: victim_id)
     hack.persist!(config.database)
+    hack.acknowledgement_message(config.acknowledgement)
+  end
+
+  def in_channel_response(body)
+    json_response(response_type: "in_channel", text: body)
   end
 
   def json_response(status: 200, **payload)
