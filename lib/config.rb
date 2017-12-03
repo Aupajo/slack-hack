@@ -13,7 +13,7 @@ class Config
   end
 
   def acknowledgement
-    @acknowledgement ||= ENV.fetch('SLACK_ACKNOWLEDGEMENT', '%{victim} was hacked by %{attacker}!')
+    @acknowledgement ||= ENV.fetch('HACK_ACKNOWLEDGEMENT', '%{victim} was hacked by %{attacker}!')
   end
 
   def verification_token
