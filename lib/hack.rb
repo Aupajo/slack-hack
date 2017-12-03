@@ -9,9 +9,13 @@ class Hack
     database[:hacks].insert(victim_id: victim_id, attacker_id: attacker_id)
   end
 
-  def acknowledgement_message(template)
-    victim = "<@#{victim_id}>"
-    attacker = attacker_id ? "<@#{attacker_id}>" : "someone"
-    template % { victim: victim, attacker: attacker }
+  def acknowledgement_message
+    message = "<@#{victim_id}> left their computer unattended!"
+
+    if attacker_id
+      message << " <@#{attacker_id}> scored a point."
+    end
+
+    message
   end
 end

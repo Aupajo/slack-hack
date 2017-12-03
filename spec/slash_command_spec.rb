@@ -19,7 +19,6 @@ RSpec.describe 'Slash command' do
 
   it 'returns an acknowledgement' do
     config.verification_token = 'apples'
-    config.acknowledgement = '%{victim} was pwned by %{attacker}'
 
     payload = slack_payload(
       token: "apples",
@@ -34,14 +33,13 @@ RSpec.describe 'Slash command' do
     expect(JSON.parse(last_response.body, symbolize_names: true)).to eq(
       {
         response_type: "in_channel",
-        text: "<@U2147483697> was pwned by <@U012ABCDEF>"
+        text: "<@U2147483697> left their computer unattended! <@U012ABCDEF> scored a point."
       }
     )
   end
 
   it 'returns an anonymous acknowledgement' do
     config.verification_token = 'secret'
-    config.acknowledgement = '%{victim} was pwned by %{attacker}'
 
     payload = slack_payload(token: "secret", user_id: "U2147483697", text: "")
     post('/hack', payload)
@@ -51,7 +49,7 @@ RSpec.describe 'Slash command' do
     expect(JSON.parse(last_response.body, symbolize_names: true)).to eq(
       {
         response_type: "in_channel",
-        text: "<@U2147483697> was pwned by someone"
+        text: "<@U2147483697> left their computer unattended!"
       }
     )
   end

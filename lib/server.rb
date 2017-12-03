@@ -39,7 +39,7 @@ class Server
 
     hack = Hack.new(attacker_id: attacker_id, victim_id: victim_id)
     hack.persist!(config.database)
-    hack.acknowledgement_message(config.acknowledgement)
+    hack.acknowledgement_message
   end
 
   def in_channel_response(body)

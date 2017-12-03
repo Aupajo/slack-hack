@@ -12,10 +12,6 @@ class Config
     @database ||= Sequel.connect(database_url)
   end
 
-  def acknowledgement
-    @acknowledgement ||= ENV.fetch('HACK_ACKNOWLEDGEMENT', '%{victim} was hacked by %{attacker}!')
-  end
-
   def verification_token
     @verification_token ||= ENV.fetch('SLACK_VERIFICATION_TOKEN')
   end
