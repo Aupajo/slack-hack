@@ -69,12 +69,12 @@ RSpec.describe 'Slash command' do
 
     expected_body = <<~LEADERBOARD
       *Most hacks*
-      <C>: 2
-      <B>: 1
+      <@C>: 2
+      <@B>: 1
 
       *Most hacked*
-      <A>: 3
-      <B>: 1
+      <@A>: 3
+      <@B>: 1
     LEADERBOARD
 
     expect(JSON.parse(last_response.body, symbolize_names: true)).to eq(
