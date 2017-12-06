@@ -22,6 +22,6 @@ class LeaderboardMarkdown
   end
 
   def formatted_score(score)
-    "#{score.slack_user_id}: #{score.count}"
+    "<#{score.slack_user_id}>: #{score.count}"
   end
 end

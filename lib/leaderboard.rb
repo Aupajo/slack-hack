@@ -23,7 +23,11 @@ class Leaderboard
   private
 
   def scores_for(column)
-    dataset.group_and_count(column).map { |data| Score.new(*data.values) }.sort
+    dataset
+      .exclude(column => nil)
+      .group_and_count(column)
+      .map { |data| Score.new(*data.values) }
+      .sort
   end
 
   def dataset

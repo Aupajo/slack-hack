@@ -1,8 +1,4 @@
-Score = Struct.new(:id, :count) do
-  def slack_user_id
-    id ? "<@#{id}>" : "(Anonymous)"
-  end
-
+Score = Struct.new(:slack_user_id, :count) do
   def <=> (other)
     other.count <=> count
   end
