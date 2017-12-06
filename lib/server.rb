@@ -29,7 +29,7 @@ class Server
 
   def leaderboard_message
     message = Leaderboard.new(config.database).to_markdown
-    slack_response(message)
+    slack_response(message, response_type: "ephemeral")
   end
 
   def record_and_acknowledge_hack!

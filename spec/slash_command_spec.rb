@@ -79,7 +79,7 @@ RSpec.describe 'Slash command' do
 
     expect(JSON.parse(last_response.body, symbolize_names: true)).to eq(
       {
-        response_type: "in_channel",
+        response_type: "ephemeral",
         text: expected_body
       }
     )
