@@ -17,26 +17,26 @@ RSpec.describe 'Slash command' do
     expect(post('/hack', token: 'oranges').status).to eq 401
   end
 
-  it 'returns an acknowledgement' do
-    config.verification_token = 'apples'
+    it 'returns an acknowledgement' do
+      config.verification_token = 'apples'
 
-    payload = slack_payload(
-      token: "apples",
-      user_id: "U2147483697",
-      text: "<@U012ABCDEF|ernie>"
-    )
+      payload = slack_payload(
+        token: "apples",
+        user_id: "U2147483697",
+        text: "<@U012ABCDEF|ernie>"
+      )
 
-    post('/hack', payload)
+      post('/hack', payload)
 
-    expect(last_response.status).to eq 200
-    expect(last_response.content_type).to eq 'application/json'
-    expect(JSON.parse(last_response.body, symbolize_names: true)).to eq(
-      {
-        response_type: "in_channel",
-        text: "<@U2147483697> left their computer unattended! <@U012ABCDEF> scored a point."
-      }
-    )
-  end
+      expect(last_response.status).to eq 200
+      expect(last_response.content_type).to eq 'application/json'
+      expect(JSON.parse(last_response.body, symbolize_names: true)).to eq(
+        {
+          response_type: "in_channel",
+          text: "<@U2147483697> left their computer unattended! <@U012ABCDEF> scored a point."
+        }
+      )
+    end
 
   it 'returns an anonymous acknowledgement' do
     config.verification_token = 'secret'
@@ -82,6 +82,27 @@ RSpec.describe 'Slash command' do
       {
         response_type: "in_channel",
         text: expected_body
+      }
+    )
+  end
+
+  it 'rejects requests whose attacker matches the victim' do
+    config.verification_token = 'apples'
+
+    payload = slack_payload(
+      token: "apples",
+      user_id: "U2147483697",
+      text: "<@U2147483697|ernie>"
+    )
+
+    post('/hack', payload)
+
+    expect(last_response.status).to eq 200
+    expect(last_response.content_type).to eq 'application/json'
+    expect(JSON.parse(last_response.body, symbolize_names: true)).to eq(
+      {
+        response_type: "ephemeral",
+        text: "You can't hack yourself!"
       }
     )
   end

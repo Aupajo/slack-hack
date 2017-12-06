@@ -19,31 +19,34 @@ class Server
     return NOT_AUTHORIZED_RESPONSE if token_invalid?
 
     if leaderboard_requested?
-      message = leaderboard_message
+      leaderboard_message
     else
-      message = record_and_acknowledge_hack!
+      record_and_acknowledge_hack!
     end
-
-    in_channel_response(message)
   end
 
   private
 
   def leaderboard_message
-    Leaderboard.new(config.database).to_markdown
+    message = Leaderboard.new(config.database).to_markdown
+    slack_response(message)
   end
 
   def record_and_acknowledge_hack!
     victim_id = request.params.fetch('user_id')
     attacker_id = SlackUserID.parse(slash_message_content)
 
-    hack = Hack.new(attacker_id: attacker_id, victim_id: victim_id)
-    hack.persist!(config.database)
-    hack.acknowledgement_message
+    begin
+      hack = Hack.new(attacker_id: attacker_id, victim_id: victim_id)
+      hack.persist!(config.database)
+      slack_response(hack.acknowledgement_message)
+    rescue Hack::SelfHackError
+      slack_response("You can't hack yourself!", response_type: "ephemeral")
+    end
   end
 
-  def in_channel_response(body)
-    json_response(response_type: "in_channel", text: body)
+  def slack_response(body, response_type: "in_channel")
+    json_response(response_type: response_type, text: body)
   end
 
   def json_response(status: 200, **payload)

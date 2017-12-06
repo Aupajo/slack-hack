@@ -1,4 +1,5 @@
 class Hack
+  SelfHackError = Class.new(StandardError)
   attr_reader :attacker_id, :victim_id
 
   def initialize(attacker_id:, victim_id:)
@@ -6,7 +7,12 @@ class Hack
   end
 
   def persist!(database)
+    validate!
     database[:hacks].insert(victim_id: victim_id, attacker_id: attacker_id)
+  end
+
+  def validate!
+    fail SelfHackError if attacker_id == victim_id
   end
 
   def acknowledgement_message
