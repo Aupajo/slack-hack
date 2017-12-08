@@ -16,6 +16,10 @@ class Config
     @verification_token ||= ENV.fetch('SLACK_VERIFICATION_TOKEN')
   end
 
+  def webhook_url
+    @webhook_url ||= ENV.fetch('SLACK_WEBHOOK_URL')
+  end
+
   def slash_command
     @slash_command ||= ENV.fetch('SLACK_SLASH_COMMAND', 'hack')
   end

@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+
+require_relative '../config/environment'
+require 'optparse'
+
+config = Config.new
+
+post = false
+channel = nil
+webhook_url = config.webhook_url
+
+OptionParser.new do |opts|
+  opts.on("--post", "Post to Slack") do |value|
+    post = value
+  end
+
+  opts.on("--channel CHANNEL", "Override default Slack channel") do |value|
+    channel = value
+  end
+
+  opts.on("--webhook-url URL", "Override Slack webhook") do |value|
+    webhook_url = value
+  end
+end.parse!
+
+
+leaderboard = Leaderboard.new(config.database)
+
+most_hacks = leaderboard.attackers.first
+most_hacked = leaderboard.victims.first
+
+report = <<~REPORT
+  Cake stats for the week!
+
+  *Cake Captain*
+  👑 <@#{most_hacks.slack_user_id}>: #{most_hacks.count} hacks
+
+  *Least Secure*
+  😱 <@#{most_hacked.slack_user_id}>: hacked #{most_hacks.count} times
+
+  Run `/cake leaderboard` for the full stats.
+REPORT
+
+if post
+  require 'net/http'
+
+  payload = { channel: channel, text: report }.compact
+  json = JSON.generate(payload)
+
+  uri = URI.parse(webhook_url)
+
+  response = Net::HTTP.post_form(uri, payload: json)
+  puts response.code
+  puts response.body.inspect
+else
+  puts report
+end
